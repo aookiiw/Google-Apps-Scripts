@@ -1,0 +1,146 @@
+var spreadsheetId = "1tfLSucwafYlf6ciB4YLNazdZc1DmwihRlY0HLs3FRVI"; 
+var sheetNameestudiantes = "Estudiantes";
+
+var parentFolder = DriveApp.getFolderById("1SwnpS6o01qzNzunGYXaO0e-lYcTHsjJe");
+
+var plantillauf1 = DriveApp.getFileById("1NNIqIfxQod3gYODlMXc2M-c5tl8t6SrfDKTpiIPYCr0")
+
+var plantillauf2 = DriveApp.getFileById("1jESzj7uWLzFpMK28q8vKpmaJP1yRCXq_6M8eHYK1CkE")
+
+var plantillauf3 = DriveApp.getFileById("1Rkzkn08E8R1mY5E2vgHdZEojD_3ygnoPE7nexafVYyA")
+
+var plantillafinal = DriveApp.getFileById("1xnj4dXTymWKqCsC_f5sKRbkQYJ3BrBShtgizLGOCVcs")
+
+var sheetNamenotas = "Notas";
+
+function general() {
+ 
+  var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+
+  var sheetestudiantes = spreadsheet.getSheetByName(sheetNameestudiantes);
+
+  var sheetnotas = spreadsheet.getSheetByName(sheetNamenotas);
+
+  var dataestudiantes = sheetestudiantes.getDataRange().getValues();  
+  
+  var datanotas = sheetnotas.getDataRange().getValues();
+  // Recorrer los datos de la hoja de cálculo
+  for (var i = 1; i < dataestudiantes.length; i++) { // Empezar en la fila 2 (ignorar encabezados)
+    var curso = dataestudiantes[i][0]; // Obtener el valor de la columna A (curso)
+    var grupo = dataestudiantes[i][1]; // Obtener el valor de la columna B (grupo)
+    var nombre = dataestudiantes[i][2]; // Obtener el valor de la columna C (nombre)
+    var apellido = dataestudiantes[i][3]; // Obtener el valor de la columna D (apellido)
+    var correos = datanotas[i][0];
+
+
+
+    var cursoFolder = getOrCreateFolder(parentFolder, curso);
+    
+
+    var grupoFolder = getOrCreateFolder(cursoFolder, grupo);
+    
+
+    var estudianteFolder = getOrCreateFolder(grupoFolder, nombre + " " + apellido);
+    
+    
+
+    var uf1folder = createSubFolder(estudianteFolder, "UF1");
+    var notasuf1 = plantillauf1.makeCopy("UF1", uf1folder);
+    var cuerpouf1 = DocumentApp.openById(notasuf1.getId()).getBody();
+
+    var uf2folder = createSubFolder(estudianteFolder, "UF2");
+    var notasuf2 = plantillauf2.makeCopy("UF2", uf2folder);
+    var cuerpouf2 = DocumentApp.openById(notasuf2.getId()).getBody();
+    
+    var uf3folder = createSubFolder(estudianteFolder, "UF3");
+    var notasuf3 = plantillauf3.makeCopy("UF3", uf3folder);
+    var cuerpouf3 = DocumentApp.openById(notasuf3.getId()).getBody();
+
+    var finalfolder = createSubFolder(estudianteFolder, "Final");
+    var notasfinal = plantillafinal.makeCopy("Final", finalfolder);
+    var cuerpofinal = DocumentApp.openById(notasfinal.getId()).getBody();
+ 
+    
+    var notasm1uf1 = datanotas[i][1];
+    var notasm1uf2 = datanotas[i][2];
+    var notasm1uf3 = datanotas[i][3];
+    var notasm1final = datanotas[i][4];
+    
+    var notasm21uf1 = datanotas[i][5];
+    var notasm21uf2 = datanotas[i][6];
+    var notasm21uf3 = datanotas[i][7];
+    var notasm21final = datanotas[i][8];
+
+    var notasm87uf1 = datanotas[i][9];
+    var notasm87uf2 = datanotas[i][10];
+    var notasm87uf3 = datanotas[i][11];
+    var notasm87final = datanotas[i][12];
+
+    var notasm76uf1 = datanotas[i][13];
+    var notasm76uf2 = datanotas[i][14];
+    var notasm76uf3 = datanotas[i][15];
+    var notasm76final = datanotas[i][16];
+
+
+    function notas1trimestre(){
+    cuerpouf1.replaceText("nomestudiante", nombre + " " + apellido);
+    cuerpouf1.replaceText("cursoestudiante", curso + grupo);
+    cuerpouf1.replaceText("notasm1uf1", notasm1uf1);
+    cuerpouf1.replaceText("notasm21uf1", notasm21uf1);
+    cuerpouf1.replaceText("notasm87uf1", notasm87uf1);
+    cuerpouf1.replaceText("notasm76uf1", notasm76uf1);
+    }
+    function notas2trimestre(){
+      notas1trimestre();
+      cuerpouf2.replaceText("notasm1uf2", notasm1uf2);
+      cuerpouf2.replaceText("notasm21uf2", notasm21uf2);
+      cuerpouf2.replaceText("notasm87uf2", notasm87uf2);
+      cuerpouf2.replaceText("notasm76uf2", notasm76uf2);
+    }
+
+    function notas3trimestre(){
+      notas2trimestre();
+      cuerpouf3.replaceText("notasm1uf3", notasm1uf3);
+      cuerpouf3.replaceText("notasm21uf3", notasm21uf3);
+      cuerpouf3.replaceText("notasm87uf3", notasm87uf3);
+      cuerpouf3.replaceText("notasm76uf3", notasm76uf3);
+    }
+
+    function notasfinales(){
+      notas3trimestre();
+      cuerpofinal.replaceText("notasm1final", notasm1final);
+      cuerpofinal.replaceText("notasm21final", notasm21final);
+      cuerpofinal.replaceText("notasm87final", notasm87final);
+      cuerpofinal.replaceText("notasm76final", notasm76final);
+    }
+
+    function sendEmails(){
+      GmailApp.sendEmail(correos, "Bulletin de notas", "Ya tiene lista sus boletines de notas",{
+      attachments: [notasuf1.getAs(MimeType.PDF), notasm1uf2.getAs(MimeType.PDF), notasm1uf3.getAs(MimeType.PDF), notasfinales,getAs(MimeType.PDF)],
+      name: "noreply",
+    })
+    }
+
+  Logger.log("Carpeta principal creada: %s", parentFolder.getUrl());
+
+  GmailApp.sendEmail("karimsagandykov19@iernestlluch.cat", "Bulletines de notas", "El programa ya ha acabado!")
+
+}
+}
+
+function getOrCreateFolder(parentFolder, folderName) {
+  var folder;
+  var folders = parentFolder.getFoldersByName(folderName);
+  if (folders.hasNext()) {
+    folder = folders.next();
+  } else {
+    folder = parentFolder.createFolder(folderName);
+  }
+  return folder;
+}
+
+
+function createSubFolder(parentFolder, folderName) {
+  var subFolder = parentFolder.createFolder(folderName);
+  return subFolder;
+}
